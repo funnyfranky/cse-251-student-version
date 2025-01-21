@@ -1,1 +1,5 @@
+# Ignores all log files
 *.log
+
+# Ignore Local Code Spell Checker File
+settings.json
