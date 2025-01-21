@@ -2,7 +2,7 @@
 Course: CSE 251 
 Lesson: L02 Prove
 File:   prove.py
-Author: <Add name here>
+Author: Josh Chapman
 
 Purpose: Retrieve Star Wars details from a server
 
@@ -61,20 +61,123 @@ call_count = 0
 
 
 # TODO Add your threaded class definition here
+class APIThread(threading.Thread):
+    
 
+    def __init__(self, url, result_list):
+        threading.Thread.__init__(self)
+        self.url = url
+        self.result_list = result_list
+
+    def run(self):
+        global call_count
+        try:
+            response = requests.get(self.url)
+            call_count += 1
+            data = response.json()
+
+            # Thread-safe addition to the result list
+            with threading.Lock():
+                self.result_list.append(data)
+        except Exception as e:
+            print(f'Error getting {self.url}: {e}')
 
 # TODO Add any functions you need here
 
+def fetch_data_concurrently(urls):
+    result_list = []
+    threads = []
+
+    for url in urls:
+        thread = APIThread(url, result_list)
+        threads.append(thread)
+        thread.start()
+
+    for thread in threads:
+        thread.join()
+
+    return result_list
+def return_datetime():
+    return f'{datetime.now().strftime("%H:%M:%S")}| '
+
+def print_info(dictionary):
+    print(return_datetime() + '----------------------------------------')
+    # Print Title
+    print(return_datetime() + 'Title   : ' + dictionary['title'])
+    # Print Director
+    print(return_datetime() + 'Director: ' + dictionary['director'])
+    # Print Producer
+    print(return_datetime() + 'Producer: ' + dictionary['producer'])
+    # Released
+    print(return_datetime() + 'Released: ' + dictionary['release_date'])
+    print(return_datetime())
+
+    # Character Count
+    print(f'{return_datetime()}Characters: {len(dictionary['characters'])}')
+    # Character List, , ,
+    characters = fetch_data_concurrently(dictionary['characters'])
+    print(return_datetime(),end='')
+    name_list = [c['name'] for c in characters]
+    name_list.sort()
+    print(', '.join(name_list))
+    print(return_datetime())
+
+    
+    # Planet Count
+    print(f'{return_datetime()}Planets: {len(dictionary['planets'])}')
+    # Planet List, , ,
+    planets = fetch_data_concurrently(dictionary['planets'])
+    print(return_datetime(),end='')
+    planet_list = [c['name'] for c in planets]
+    planet_list.sort()
+    print(', '.join(planet_list))
+    print(return_datetime())
+
+    # Starships Count
+    print(f'{return_datetime()}Starships: {len(dictionary['starships'])}')
+    # Starships List, , ,
+    starships = fetch_data_concurrently(dictionary['starships'])
+    print(return_datetime(),end='')
+    ship_list = [c['name'] for c in starships]
+    ship_list.sort()
+    print(', '.join(ship_list))
+    print(return_datetime())
+
+    # Vehicles Count
+    print(f'{return_datetime()}Vehicles: {len(dictionary['vehicles'])}')
+    # Vehicles List, , ,
+    vehicles = fetch_data_concurrently(dictionary['vehicles'])
+    print(return_datetime(),end='')
+    vehicle_list = [c['name'] for c in vehicles]
+    vehicle_list.sort()
+    print(', '.join(vehicle_list))
+    print(return_datetime())
+
+    # Species Count
+    print(f'{return_datetime()}Species: {len(dictionary['species'])}')
+    # Species List, , ,
+    species = fetch_data_concurrently(dictionary['species'])
+    print(return_datetime(),end='')
+    species_list = [c['name'] for c in species]
+    species_list.sort()
+    print(', '.join(species_list))
+    print(return_datetime())
 
 def main():
     log = Log(show_terminal=True)
     log.start_timer('Starting to retrieve data from the server')
 
     # TODO Retrieve Top API urls
+    top_level_result = fetch_data_concurrently([TOP_API_URL])
 
     # TODO Retrieve Details on film 6
+    film_6_url = f"{top_level_result[0]['films']}6"
+    film_6_results  = fetch_data_concurrently([film_6_url])
+
+
 
     # TODO Display results
+    print_info(film_6_results[0])
 
     log.stop_timer('Total Time To complete')
     log.write(f'There were {call_count} calls to the server')
