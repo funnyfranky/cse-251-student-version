@@ -51,7 +51,8 @@ if __name__ == '__main__':
     log.start_timer()
 
     start = 10000000000
-    range_count = 100000
+    range_count = 100010
+    
 
     # Is there a critical section?  TWO of them!!
     # the prime count variable AND numbers_processed

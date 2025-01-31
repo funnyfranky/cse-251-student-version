@@ -185,3 +185,13 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+    # response = requests.get(TOP_API_URL)
+
+    # if response.status_code == 200:
+    #     data = response.json()
+    #     print(data)
+
+    #     print('\nHere is the URL for person id = 1:', f'{data["people"]}1')
+    # else:
+    #     print('Error in requesting ID')
