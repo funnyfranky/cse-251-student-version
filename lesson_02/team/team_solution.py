@@ -44,6 +44,7 @@ class Deck:
 
 
     def reshuffle(self):
+        print('Reshuffle Deck')
         req = Request_Thread(rf'https://deckofcardsapi.com/api/deck/{self.id}/shuffle/')
         req.start()
         req.join()
@@ -72,7 +73,7 @@ class Deck:
 if __name__ == '__main__':
 
     # DONE: Run the program team_get_deck_id.py ONCE and insert the deck ID here.
-    deck_id = 'CODE'
+    deck_id = '6o1jk6w34u73'
 
     deck = Deck(deck_id)
 
