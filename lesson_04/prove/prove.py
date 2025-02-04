@@ -15,6 +15,7 @@ Instructions:
 import time
 import threading
 import random
+from datetime import datetime
 
 # Include cse 251 common Python files
 from cse251 import *
@@ -77,67 +78,81 @@ class Queue251():
 class Factory(threading.Thread):
     """ This is a factory.  It will create cars and place them on the car queue """
 
-    def __init__(self):
-        # TODO, you need to add arguments that will pass all of data that 1 factory needs
-        # to create cars and to place them in a queue.
-        pass
-
+    def __init__(self, queue, empty_slots, available_cars, queue_lock):
+        super().__init__()
+        self.queue = queue
+        self.empty_slots = empty_slots
+        self.available_cars = available_cars
+        self.queue_lock = queue_lock
 
     def run(self):
-        for i in range(CARS_TO_PRODUCE):
-            # TODO Add you code here
-            """
-            create a car
-            place the car on the queue
-            signal the dealer that there is a car on the queue
-           """
+        for _ in range(CARS_TO_PRODUCE):
+            self.empty_slots.acquire()  # Wait for an empty slot
 
-        # signal the dealer that there there are not more cars
-        pass
+            car = Car()  # Create a car
 
+            with self.queue_lock:  # Ensure thread safety
+                self.queue.put(car)
+
+            self.available_cars.release()  # Signal that a car is available
+
+        # Signal dealer that production is complete
+        self.available_cars.release()
 
 class Dealer(threading.Thread):
     """ This is a dealer that receives cars """
 
-    def __init__(self):
-        # TODO, you need to add arguments that pass all of data that 1 Dealer needs
-        # to sell a car
-        pass
+    def __init__(self, queue, empty_slots, available_cars, queue_lock, queue_stats):
+        super().__init__()
+        self.queue = queue
+        self.empty_slots = empty_slots
+        self.available_cars = available_cars
+        self.queue_lock = queue_lock
+        self.queue_stats = queue_stats
 
     def run(self):
         while True:
-            # TODO Add your code here
-            """
-            take the car from the queue
-            signal the factory that there is an empty slot in the queue
-            """
+            self.available_cars.acquire()  # Wait for a car to be available
 
-            # Sleep a little after selling a car
-            # Last statement in this for loop - don't change
+            with self.queue_lock:  # Ensure thread safety
+                if self.queue.size() == 0:
+                    break  # Stop if no more cars to process
+                car = self.queue.get()
+                self.queue_stats[self.queue.size()] += 1  # Track queue length
+
+            self.empty_slots.release()  # Signal that a slot is now free
+
+            print(f'Sold: {car.info()}')
             time.sleep(random.random() / (SLEEP_REDUCE_FACTOR))
-
-
 
 def main():
     log = Log(show_terminal=True)
 
     # TODO Create semaphore(s)
+    empty_slots = threading.Semaphore(MAX_QUEUE_SIZE)  # Initially all slots empty
+    available_cars = threading.Semaphore(0)  # Initially no cars available
+
     # TODO Create queue251 
     # TODO Create lock(s) ?
 
+    queue = Queue251()
+    queue_lock = threading.Lock()
+
     # This tracks the length of the car queue during receiving cars by the dealership
-    # i.e., update this list each time the dealer receives a car
     queue_stats = [0] * MAX_QUEUE_SIZE
 
-    # TODO create your one factory
-
-    # TODO create your one dealership
+    factory = Factory(queue, empty_slots, available_cars, queue_lock)
+    dealer = Dealer(queue, empty_slots, available_cars, queue_lock, queue_stats)
 
     log.start_timer()
 
-    # TODO Start factory and dealership
+    # Start threads
+    factory.start()
+    dealer.start()
 
-    # TODO Wait for factory and dealership to complete
+    # Wait for threads to complete
+    factory.join()
+    dealer.join()
 
     log.stop_timer(f'All {sum(queue_stats)} have been created')
 
