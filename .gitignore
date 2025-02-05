@@ -3,3 +3,8 @@
 
 # Ignore Local Code Spell Checker File
 settings.json
+
+
+
+lesson_04/prove/*.png
+lesson_04/prove/test.py
