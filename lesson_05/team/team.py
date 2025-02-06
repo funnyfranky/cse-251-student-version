@@ -41,9 +41,23 @@ def is_prime(n: int) -> bool:
 
 
 # TODO create read_thread function
-
+def read_thread(filename,shared_queue,):
+    with open(filename, 'r') as f:
+        for line in f:
+            print(f'Placing {line.strip()} on the queue.')
+            shared_queue.put(line.strip())
+    for _ in range(PRIME_PROCESS_COUNT):
+        shared_queue.put('-1')
 
 # TODO create prime_process function
+def prime_process(shared_queue, prime_list):
+    num = int(shared_queue.get())
+    if num != -1:
+        if is_prime(num):
+            prime_list.append(num)
+            print(f'found {num} as a prime')
+        else:
+            print('nope')
 
 
 def create_data_txt(filename):
@@ -65,21 +79,34 @@ def main():
     log.start_timer()
 
     # TODO Create shared data structures
+    manager = mp.Manager()
+    shared_queue = manager.Queue()
+    primes = manager.list()
+    processes = []
 
     # TODO create reading thread
+    read = threading.Thread(target=read_thread, args=(filename,shared_queue))
 
     # TODO create prime processes
+    prime_processes = mp.Process(target=prime_process,args=(shared_queue,primes))
 
     # TODO Start them all
+    read.start()
+    prime_processes.start()
+    for _ in range(100):
+        processes.add(prime_processes)
 
     # TODO wait for them to complete
+    read.join()
+    for i in processes:
+        i.join()
 
     log.stop_timer(f'All primes have been found using {PRIME_PROCESS_COUNT} processes')
 
-    # display the list of primes
-    print(f'There are {len(primes)} found:')
-    for prime in primes:
-        print(prime)
+    # # display the list of primes
+    # print(f'There are {len(primes)} found:')
+    # for prime in primes:
+    #     print(prime)
 
 
 if __name__ == '__main__':
