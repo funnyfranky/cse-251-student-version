@@ -79,7 +79,7 @@ class Factory(threading.Thread):
     """ This is a factory.  It will create cars and place them on the car queue """
 
     def __init__(self, queue, empty_slots, available_cars, queue_lock):
-        super().__init__()
+        threading.Thread.__init__(self)
         self.queue = queue
         self.empty_slots = empty_slots
         self.available_cars = available_cars
@@ -101,9 +101,8 @@ class Factory(threading.Thread):
 
 class Dealer(threading.Thread):
     """ This is a dealer that receives cars """
-
     def __init__(self, queue, empty_slots, available_cars, queue_lock, queue_stats):
-        super().__init__()
+        threading.Thread.__init__(self)
         self.queue = queue
         self.empty_slots = empty_slots
         self.available_cars = available_cars
