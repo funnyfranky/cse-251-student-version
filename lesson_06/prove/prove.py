@@ -2,7 +2,7 @@
 Course: CSE 251 
 Lesson: L06 Prove
 File:   prove.py
-Author: <Add name here>
+Author: Joshua Chapman
 
 Purpose: Processing Plant
 
@@ -183,11 +183,11 @@ class Assembler(mp.Process):
 
 class Wrapper(mp.Process):
     """ Takes created gifts and "wraps" them by placing them in the boxes file. """
-    def __init__(self,receivePipe,sendPipe,filename,sleepTime):
+    def __init__(self,receivePipe,giftCount,filename,sleepTime):
         mp.Process.__init__(self)
         # TODO Add any arguments and variables here
         self.receivePipe = receivePipe
-        self.sendPipe = sendPipe
+        self.giftCount = giftCount
         self.filename = filename
         self.sleepTime = sleepTime
 
@@ -198,15 +198,13 @@ class Wrapper(mp.Process):
             save gift to the file with the current time
             sleep the required amount
         '''
-        giftCount = 0
         with open(self.filename, 'a') as file:
             while True:
                 giftBox = self.receivePipe.recv()
                 if giftBox is None:
-                    self.sendPipe.send(giftCount)
                     return
                 file.write(f'Created - {datetime.now().time()}: {giftBox}\n')
-                giftCount += 1
+                self.giftCount.value += 1
                 time.sleep(self.sleepTime)
 
 
@@ -246,10 +244,9 @@ def main():
     creator_sender, bagger_receiver = mp.Pipe()
     bagger_sender, assembler_receiver = mp.Pipe()
     assembler_sender, wrapper_receiver = mp.Pipe()
-    wrapper_sender, main_receiver = mp.Pipe()
 
     # TODO create variable to be used to count the number of gifts
-    giftCount = 0
+    giftCount = mp.Value("i", 0)
 
     # delete final boxes file
     if os.path.exists(BOXES_FILENAME):
@@ -264,7 +261,7 @@ def main():
     # mp.Process(target=Bagger,args=(bagger_parent,assembler_receiver))
     assembler = Assembler(assembler_receiver,assembler_sender,settings[ASSEMBLER_DELAY])
     
-    wrapper = Wrapper(wrapper_receiver,wrapper_sender,BOXES_FILENAME,settings[WRAPPER_DELAY])
+    wrapper = Wrapper(wrapper_receiver,giftCount,BOXES_FILENAME,settings[WRAPPER_DELAY])
 
     log.write('Starting the processes')
     # TODO add code here
@@ -278,14 +275,13 @@ def main():
     creator.join()
     bagger.join()
     assembler.join()
-    giftCount = main_receiver.recv()
     wrapper.join()
 
 
     display_final_boxes(BOXES_FILENAME, log)
     
     # TODO Log the number of gifts created.
-    log.write(f'Total gifts: {giftCount}')
+    log.write(f'Total gifts: {giftCount.value}')
 
 
     log.stop_timer(f'Total time')
