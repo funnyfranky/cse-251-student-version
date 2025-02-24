@@ -24,7 +24,7 @@ import multiprocessing as mp
 from matplotlib.pylab import plt
 import numpy as np
 import glob
-import math 
+import math
 
 # Include cse 251 common Python files - Dont change
 from cse251 import *
@@ -38,11 +38,11 @@ TYPE_NAME   = 'name'
 
 # TODO: Change the pool sizes and explain your reasoning in the header comment
 
-PRIME_POOL_SIZE = 1
-WORD_POOL_SIZE  = 1
+PRIME_POOL_SIZE = 2
+WORD_POOL_SIZE  = 2
 UPPER_POOL_SIZE = 1
 SUM_POOL_SIZE   = 1
-NAME_POOL_SIZE  = 1
+NAME_POOL_SIZE  = 3
 
 # Global lists to collect the task results
 result_primes = []
@@ -66,6 +66,35 @@ def is_prime(n: int):
         i += 6
     return True
 
+def check_word_in_file(word, fileName):
+    with open(fileName, 'r') as file:
+        for line in file:
+            if word == line.strip():
+                return True
+        return False
+
+def gaussian_sum(num):
+    return num * (num + 1) // 2
+
+def json_to_dictionary(data):
+    return json.loads(data.content.decode('utf-8'))
+
+
+def collect_prime_result(result):
+    result_primes.append(result)
+
+def collect_word_result(result):
+    result_words.append(result)
+
+def collect_upper_result(result):
+    result_upper.append(result)
+
+def collect_sum_result(result):
+    result_sums.append(result)
+
+def collect_name_result(result):
+    result_names.append(result)
+
 
 def task_prime(value):
     """
@@ -75,8 +104,10 @@ def task_prime(value):
             - or -
         {value} is not prime
     """
-    pass
-
+    if (is_prime(value)):
+        return f'{value} is prime'
+    else:
+        return f'{value} is not prime'
 
 def task_word(word):
     """
@@ -86,7 +117,11 @@ def task_word(word):
             - or -
         {word} not found *****
     """
-    pass
+    if check_word_in_file(word, 'words.txt'):
+        return f'{word} found'
+    else:
+        return f'{word} not found'
+        
 
 
 def task_upper(text):
@@ -94,7 +129,7 @@ def task_upper(text):
     Add the following to the global list:
         {text} ==>  uppercase version of {text}
     """
-    pass
+    return f'{text} ==>  {text.upper()}'
 
 
 def task_sum(start_value, end_value):
@@ -103,7 +138,7 @@ def task_sum(start_value, end_value):
         sum of all numbers between start_value and end_value
         answer = {start_value:,} to {end_value:,} = {total:,}
     """
-    pass
+    return f'sum of all numbers between {start_value} and {end_value}\nanswer = {start_value:,} to {end_value:,} = {gaussian_sum(end_value) - gaussian_sum(start_value)}'
 
 
 def task_name(url):
@@ -114,7 +149,13 @@ def task_name(url):
             - or -
         {url} had an error receiving the information
     """
-    pass
+    data = requests.get(url)
+    dictionary = json_to_dictionary(data)
+    if data.status_code == 200:
+        return f"{url} has name {dictionary['name']}"
+    else:
+        return f'{url} had an error receiving the information'
+
 
 
 def main():
@@ -122,32 +163,67 @@ def main():
     log.start_timer()
 
     # TODO Create process pools
+    prime_pool = mp.Pool(PRIME_POOL_SIZE)
+    word_pool = mp.Pool(WORD_POOL_SIZE)
+    upper_pool = mp.Pool(UPPER_POOL_SIZE)
+    sum_pool = mp.Pool(SUM_POOL_SIZE)
+    name_pool = mp.Pool(NAME_POOL_SIZE)
 
     # TODO change the following if statements to start the pools
     
     count = 0
     task_files = glob.glob("tasks/*.task")
+
     for filename in task_files:
-        # print()
-        # print(filename)
         task = load_json_file(filename)
         print(task)
         count += 1
         task_type = task['task']
-        if task_type == TYPE_PRIME:
-            task_prime(task['value'])
-        elif task_type == TYPE_WORD:
-            task_word(task['word'])
-        elif task_type == TYPE_UPPER:
-            task_upper(task['text'])
-        elif task_type == TYPE_SUM:
-            task_sum(task['start'], task['end'])
-        elif task_type == TYPE_NAME:
-            task_name(task['url'])
-        else:
-            log.write(f'Error: unknown task type {task_type}')
+        match task_type:
+            case 'prime':
+                prime_pool.apply_async(task_prime, args=(task['value'],), callback=collect_prime_result)
+            case 'word':
+                word_pool.apply_async(task_word, args=(task['word'],), callback=collect_word_result)
+            case 'upper':
+                upper_pool.apply_async(task_upper, args=(task['text'],), callback=collect_upper_result)
+            case 'sum':
+                sum_pool.apply_async(task_sum, args=(task['start'], task['end']), callback=collect_sum_result)
+            case 'name':
+                name_pool.apply_async(task_name, args=(task['url'],), callback=collect_name_result)
+            case _:
+                log.write(f'Error: unknown task type {task_type}')
 
     # TODO wait on the pools
+    prime_pool.close()
+    prime_pool.join()
+    sum_pool.close()
+    sum_pool.join()
+    word_pool.close()
+    word_pool.join()
+    upper_pool.close()
+    upper_pool.join()
+    name_pool.close()
+    name_pool.join()
+
+    # for filename in task_files:
+    #     # print()
+    #     # print(filename)
+    #     task = load_json_file(filename)
+    #     print(task)
+    #     count += 1
+    #     task_type = task['task']
+    #     if task_type == TYPE_PRIME:
+    #         task_prime(task['value'])
+    #     elif task_type == TYPE_WORD:
+    #         task_word(task['word'])
+    #     elif task_type == TYPE_UPPER:
+    #         task_upper(task['text'])
+    #     elif task_type == TYPE_SUM:
+    #         task_sum(task['start'], task['end'])
+    #     elif task_type == TYPE_NAME:
+    #         task_name(task['url'])
+    #     else:
+    #         log.write(f'Error: unknown task type {task_type}')
 
     # DO NOT change any code below this line!
     #---------------------------------------------------------------------------
