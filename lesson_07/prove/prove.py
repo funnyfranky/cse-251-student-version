@@ -136,7 +136,7 @@ def task_sum(start_value, end_value):
         sum of all numbers between start_value and end_value
         answer = {start_value:,} to {end_value:,} = {total:,}
     """
-    return f'sum of all numbers between {start_value} and {end_value}\nanswer = {start_value:,} to {end_value:,} = {gaussian_sum(end_value) - gaussian_sum(start_value)}'
+    return f'sum of {start_value:,} and {end_value:,} = {gaussian_sum(end_value) - gaussian_sum(start_value - 1):,}'
 
 
 def task_name(url):
