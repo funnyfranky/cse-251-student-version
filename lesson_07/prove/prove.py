@@ -13,7 +13,7 @@ below before submitting this file:
 
 Note: each of the 5 task functions need to return a string.  They should not print anything.
 
-I ran this code many times and this was the lowest time values I could get it to pull. I gave prime and word functions 2 pools since prime can be doing some heavy calculation, and I gave word 2 since it needed to search about 3 hundred thousand lines in a file for a word. Uppercase and summing weren't intensive functions so they get one pool each. Name got 4 since there's an in/out slowdown and I wanted it to be fast. I wasn't sure how to test other than running it a bunch of times and seeing what was faster and I think I got a great amount of pools.
+I ran this code many times and this was the lowest time values I could get it to pull. I gave prime and word functions 2 pools since prime can be doing some heavy calculation, and I gave word 2 since it needed to search about 3 hundred thousand lines in a file for a word. Uppercase and summing weren't intensive functions so they get one pool each. Name got 5 since there's an in/out slowdown and I wanted it to be fast. I wasn't sure how to test other than running it a bunch of times and seeing what was faster and I think I got a great amount of pools.
 """
 
 from datetime import datetime, timedelta
@@ -40,7 +40,7 @@ PRIME_POOL_SIZE = 2
 WORD_POOL_SIZE  = 2
 UPPER_POOL_SIZE = 1
 SUM_POOL_SIZE   = 1
-NAME_POOL_SIZE  = 3
+NAME_POOL_SIZE  = 5
 
 # Global lists to collect the task results
 result_primes = []
