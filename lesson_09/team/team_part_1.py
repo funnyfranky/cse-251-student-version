@@ -39,8 +39,8 @@ Requirements you must Implement:
 
 - Use threads for this problem.
 - Start with the PHILOSOPHERS being set to 5.
-- Philosophers need to eat for a random amount of time, between 1 to 3 seconds, when they get both forks.
-- Philosophers need to think for a random amount of time, between 1 to 3 seconds, when they are finished eating.
+- Philosopher need to eat for a random amount of time, between 1 to 3 seconds, when they get both forks.
+- Philosopher need to think for a random amount of time, between 1 to 3 seconds, when they are finished eating.
 - You want as many philosophers to eat and think concurrently as possible without violating any rules.
 - When the number of philosophers has eaten a combined total of MAX_MEALS_EATEN times, stop the
   philosophers from trying to eat; any philosophers already eating will put down their forks when they finish eating.
@@ -66,10 +66,27 @@ import threading
 PHILOSOPHERS = 5
 MAX_MEALS_EATEN = PHILOSOPHERS * 5 # NOTE: Total meals to be eaten, not per philosopher!
 
+class Philosopher(threading.Thread):
+    def __init__(self,lFork,rFork):
+        threading.Thread.__init__()
+        self.lFork = lFork
+        self.rFork = rFork
+
+def philosopher(lFork, rFork):
+   ...
+
+
 def main():
     # TODO - Create the forks.
+    fork = []
+    for _ in range(PHILOSOPHERS):
+      fork.add(threading.Lock(blocking=False))
     # TODO - Create PHILOSOPHERS philosophers.
+    for i in range(PHILOSOPHERS):
+        philosophers = [threading.Thread(philosopher,args=(fork[i],fork[(i + 1) % PHILOSOPHERS])) for _ in range(PHILOSOPHERS)]
+        
     # TODO - Start them eating and thinking.
+
     # TODO - Display how many times each philosopher ate.
     pass
 
