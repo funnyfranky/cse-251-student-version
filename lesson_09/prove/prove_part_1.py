@@ -34,6 +34,14 @@ def solve_path(maze):
     """ Solve the maze and return the path found between the start and end positions.  
         The path is a list of positions, (x, y) """
     path = []
+    
+    def solve(path):
+        for x in maze.get_possible_moves():
+            path.move(x)
+            solve(path)
+            
+        
+    
     # TODO: Solve the maze recursively while tracking the correct path.
 
     # Hint: You can create an inner function to do the recursion
