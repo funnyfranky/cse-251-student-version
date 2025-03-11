@@ -2,7 +2,7 @@
 Course: CSE 251 
 Lesson: L09 Prove Part 1
 File:   prove_part_1.py
-Author: <Add name here>
+Author: Josh Chapman
 
 Purpose: Part 1 of prove 9, finding the path to the end of a maze using recursion.
 
@@ -25,7 +25,7 @@ from cse251 import *
 SCREEN_SIZE = 800
 COLOR = (0, 0, 255)
 SLOW_SPEED = 100
-FAST_SPEED = 1
+FAST_SPEED = .1
 speed = SLOW_SPEED
 
 # TODO: Add any functions needed here.
@@ -34,19 +34,43 @@ def solve_path(maze):
     """ Solve the maze and return the path found between the start and end positions.  
         The path is a list of positions, (x, y) """
     path = []
-    
-    def solve(path):
-        for x in maze.get_possible_moves():
-            path.move(x)
-            solve(path)
-            
-        
-    
-    # TODO: Solve the maze recursively while tracking the correct path.
 
-    # Hint: You can create an inner function to do the recursion
+    # TODO: Solve the maze recursively while tracking the correct path.
+    start = maze.get_start_pos()
+    maze.move(*start, COLOR)
+    path = solve(maze, path, *start)
 
     return path
+
+    # Hint: You can create another function to do the recursion
+    
+def solve(maze, path, x, y):
+    if maze.at_end(x, y):
+        path.append((x, y))
+        return path
+    while True:
+        moves = maze.get_possible_moves(x, y)
+        if moves:
+            path.append((x, y))
+            maze.move(*moves[0], COLOR)
+            return solve(maze, path, *moves[0])
+        else:
+            maze.restore(x, y)
+            x, y = path.pop()
+
+    # if maze.at_end(x,y):
+    #     path.append((x,y))
+    #     print(f'returning path {path}')
+    #     return path
+    # moves = maze.get_possible_moves(x,y)
+    # if len(moves) == 0:
+    #     a = path.pop()
+    #     maze.restore(x,y)
+    #     return solve(maze,path,*a)
+    # else:
+    #     path.append((x,y))
+    #     maze.move(*moves[0], COLOR)
+    #     return solve(maze,path,*moves[0])
 
 
 def get_path(log, filename):
@@ -94,8 +118,8 @@ def find_paths(log):
         'small-open.bmp',
         'large.bmp',
         'large-loops.bmp',
-        # 'large-squares.bmp',
-        # 'large-open.bmp'
+        'large-squares.bmp',
+        'large-open.bmp'
     )
 
     log.write('*' * 40)
@@ -105,6 +129,7 @@ def find_paths(log):
         log.write()
         log.write(f'File: {filename}')
         path = get_path(log, filename)
+        print(f'the path is {path}')
         log.write(f'Found path has length     = {len(path)}')
     log.write('*' * 40)
 
