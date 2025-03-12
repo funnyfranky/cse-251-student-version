@@ -79,6 +79,40 @@ def get_color():
 
 
 # TODO: Add any function(s) you need, if any, here.
+def thread_worker(maze, lock, row, col, color):
+    """Thread function to explore paths in the maze."""
+    global stop, thread_count
+
+    while True:
+        if stop:
+            return
+
+        if maze.at_end(row, col):
+            with lock:
+                maze.move(row,col,color)
+                stop = True
+            return
+
+        with lock:
+            if maze.can_move_here(row, col):
+                maze.move(row, col, color)
+
+        possible_moves = maze.get_possible_moves(row, col)
+
+        if not possible_moves:
+            return
+
+        elif len(possible_moves) == 1:
+            row, col = possible_moves[0]
+        else:
+            threads = []
+            for i in range(1, len(possible_moves)):
+                new_row, new_col = possible_moves[i]
+                thread = threading.Thread(target=thread_worker, args=(maze, lock, new_row, new_col, get_color()))
+                threads.append(thread)
+                thread.start()
+                thread_count += 1
+            row, col = possible_moves[0]
 
 
 def solve_find_end(maze):
@@ -86,6 +120,14 @@ def solve_find_end(maze):
     # When one of the threads finds the end position, stop all of them.
     global stop
     stop = False
+
+    lock = threading.Lock()
+
+    x, y = maze.get_start_pos()
+    
+    initial_thread = threading.Thread(target=thread_worker, args=(maze, lock, x, y, get_color()))
+    initial_thread.start()
+    initial_thread.join()
 
 
 
