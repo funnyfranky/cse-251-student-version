@@ -67,20 +67,20 @@ PHILOSOPHERS = 5
 MAX_MEALS_EATEN = PHILOSOPHERS * 5 # NOTE: Total meals to be eaten, not per philosopher!
 
 class Philosopher(threading.Thread):
-    def __init__(self,lFork,rFork):
+    def __init__(self,id,lock_meals,lFork,rFork,):
         threading.Thread.__init__()
         self.lFork = lFork
         self.rFork = rFork
+        self.lock_meals = lock_meals
+        
 
-def philosopher(lFork, rFork):
-   ...
 
 
 def main():
     # TODO - Create the forks.
     fork = []
     for _ in range(PHILOSOPHERS):
-      fork.add(threading.Lock(blocking=False))
+      fork.add(threading.Lock())
     # TODO - Create PHILOSOPHERS philosophers.
     for i in range(PHILOSOPHERS):
         philosophers = [threading.Thread(philosopher,args=(fork[i],fork[(i + 1) % PHILOSOPHERS])) for _ in range(PHILOSOPHERS)]
