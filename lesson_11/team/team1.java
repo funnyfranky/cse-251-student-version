@@ -29,7 +29,7 @@ Part 3:
 import java.util.Random; 
 import java.lang.Math; 
 
-public class Main {
+public class team1 {
 
   static boolean isPrime(long n) 
   { 
@@ -53,21 +53,37 @@ public class Main {
 
     // create instance of Random class 
     Random rand = new Random(); 
-
-    int count = 1000;
+    int threadCount = 4;
+    int count = 10000;
     long[] array = new long[count];
-    for (int i = 0; i < count; i++) 
+    for (int i = 0; i < count; i++)
     {
       array[i] = Math.abs(rand.nextInt());
     }
 
-  // TODO - this is just sample code. you can remove it.
-    for (int i = 0; i < count; i++) 
-    {
-      if (isPrime(array[i]))
-      {
-        System.out.println(array[i]);
+    Thread[] threads = new Thread[threadCount];
+    // for i in range(0,threadCount) {};
+
+    threads[0] = new Thread(new Runnable() { // TODO Change 0 to i for loop
+      public void run() {
+        for (int i = 0; i < count/threadCount; i++) 
+        {
+          if (isPrime(array[i]))
+          {
+            System.out.println("Thread 1: " + array[i]);
+          }
+        }
       }
-    }
+    });
+    threads[0].start();
+
+    // // TODO - this is just sample code. you can remove it.
+  //   for (int i = 0; i < count; i++) 
+  //   {
+  //     if (isPrime(array[i]))
+  //     {
+  //       System.out.println(array[i]);
+  //     }
+  //   }
   }
 }
