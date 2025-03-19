@@ -23,7 +23,16 @@ def reverse_file_non_mmap(filename):
         last char will be next, etc...
     """
     # TODO add code here
-    pass
+    with open(filename, "r") as myfile:
+        data = myfile.read()
+
+    f1 = open(filename, "w")
+
+    data_1 = data[::-1]
+
+    f1.write(data_1)
+
+    f1.close()
 
 
 # -----------------------------------------------------------------------------
@@ -87,12 +96,12 @@ def create_large_file(filename):
 
 # -----------------------------------------------------------------------------
 def main():
-    create_large_file('letter_a.txt')
+    # create_large_file('letter_a.txt')
 
     reverse_file_non_mmap('data.txt')
-    reverse_file('data.txt')
+    # reverse_file('data.txt')
 
-    promote_letter_a('letter_a.txt')
+    # promote_letter_a('letter_a.txt')
     
     # TODO
     # When you get the function promote_letter_a() working

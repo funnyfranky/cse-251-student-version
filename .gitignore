@@ -8,3 +8,7 @@ settings.json
 
 lesson_04/prove/*.png
 lesson_04/prove/test.py
+
+.gitignore
+
+test.py
