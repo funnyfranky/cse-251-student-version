@@ -65,6 +65,13 @@ BUFFER_SIZE = 10
 READERS = 2
 WRITERS = 2
 
+def writer(sharedList,empty,full,lock,id):
+    with lock.acquire():
+        currentVal = sharedList[BUFFER_SIZE]
+
+def reader(sharedList,empty,full,lock):
+    ...
+
 def main():
 
     # This is the number of values that the writer will send to the reader
@@ -74,13 +81,32 @@ def main():
     smm.start()
 
     # TODO - Create a ShareableList to be used between the processes
+    sharedList = smm.ShareableList([0]*BUFFER_SIZE + [0, 0, 0, 0, 0])
+
+    empty = mp.Semaphore(BUFFER_SIZE)
+    full = mp.Semaphore(0)
+    lock = mp.Lock()
+
+    writerProcesses = [mp.Process(target=writer,args=(sharedList,empty,full,lock,id)) for id in range(WRITERS)]
+    readerProcesses = [mp.Process(target=reader,args=(sharedList,empty,full,lock)) for _ in range(READERS)]
+
+    for i in writerProcesses:
+        i.start()
+    for i in readerProcesses:
+        i.start()
+
+    for i in writerProcesses:
+        i.join()
+    for i in readerProcesses:
+        i.join()
+
     #      - The buffer should be size 10 PLUS at least three other
     #        values (ie., [0] * (BUFFER_SIZE + 3)).  The extra values
     #        are used for the head and tail for the circular buffer.
     #        The another value is the current number that the writers
     #        need to send over the buffer.  This last value is shared
     #        between the writers.
-    #        You can add another value to the sharedable list to keep
+    #        You can add another value to the shared list to keep
     #        track of the number of values received by the readers.
     #        (ie., [0] * (BUFFER_SIZE + 4))
 
