@@ -65,11 +65,20 @@ BUFFER_SIZE = 10
 READERS = 2
 WRITERS = 2
 
-def writer(sharedList,empty,full,lock,id):
-    with lock.acquire():
-        currentVal = sharedList[BUFFER_SIZE]
+WRITE_INDEX = BUFFER_SIZE + 0
+READ_INDEX = BUFFER_SIZE + 1
+FINISHED_INDEX = BUFFER_SIZE + 2
 
-def reader(sharedList,empty,full,lock):
+def returnIncrement(val):
+    return 0 if (val + 1 >= BUFFER_SIZE) else val + 1
+
+def writer(sharedList,empty_spaces,full_spaces,lock,id):
+    empty_spaces.acquire()
+    with lock.acquire():
+        sharedList[sharedList[WRITE_INDEX]]
+
+def reader(sharedList,empty_spaces,full_spaces,lock):
+    currentVal = sharedList[WRITE_INDEX]
     ...
 
 def main():
@@ -83,12 +92,12 @@ def main():
     # TODO - Create a ShareableList to be used between the processes
     sharedList = smm.ShareableList([0]*BUFFER_SIZE + [0, 0, 0, 0, 0])
 
-    empty = mp.Semaphore(BUFFER_SIZE)
-    full = mp.Semaphore(0)
+    empty_spaces = mp.Semaphore(BUFFER_SIZE)
+    full_spaces = mp.Semaphore(0)
     lock = mp.Lock()
 
-    writerProcesses = [mp.Process(target=writer,args=(sharedList,empty,full,lock,id)) for id in range(WRITERS)]
-    readerProcesses = [mp.Process(target=reader,args=(sharedList,empty,full,lock)) for _ in range(READERS)]
+    writerProcesses = [mp.Process(target=writer,args=(sharedList,empty_spaces,full_spaces,lock,id)) for id in range(WRITERS)]
+    readerProcesses = [mp.Process(target=reader,args=(sharedList,empty_spaces,full_spaces,lock)) for _ in range(READERS)]
 
     for i in writerProcesses:
         i.start()
