@@ -2,7 +2,7 @@
 Course: CSE 251 
 Lesson: L09 Prove Part 2
 File:   prove_part_2.py
-Author: <Add name here>
+Author: Josh Chapman
 
 Purpose: Part 2 of prove 9, finding the path to the end of a maze using recursion.
 
@@ -21,11 +21,11 @@ position:
 
 What would be your strategy?
 
-<Answer here>
+I may be wrong but it seems like you could pass through a x and y value list. It wouldn't necessarily be the BEST way through but it would keep track of *A* on the way through.
 
 Why would it work?
 
-<Answer here>
+Since the maze uses threading but also recursion, each thread can keep track of a path and then a callback function could grab the list of coordinates and provide them to the user.
 
 """
 

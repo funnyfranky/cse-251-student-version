@@ -55,6 +55,8 @@ Instructions:
 
 Add any comments for me:
 
+The logic is sound enough that it will run well consistently. I think it's worth a 4.
+
 """
 
 import random
