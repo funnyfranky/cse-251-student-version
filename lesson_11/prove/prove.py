@@ -37,7 +37,7 @@ def guest_partying(id, count):
     print(f'Guest: {id}, count = {count}')
     time.sleep(random.uniform(0, 1))
 
-def cleaner():
+def cleaner(start_time, cleaner_id, guest_count, clean_count, light_lock, room_lock):
     """
     do the following for TIME seconds
         cleaner will wait to try to clean the room (cleaner_waiting())
@@ -46,9 +46,21 @@ def cleaner():
         Take some time cleaning (cleaner_cleaning())
         display message STOPPING_CLEANING_MESSAGE
     """
-    pass
+    while start_time + TIME > time.time():
+        with room_lock:  # Only one cleaner can enter, and must wait for an empty room
+            if guest_count.value == 0 and light_lock.acquire(block=False):
+                print(STARTING_CLEANING_MESSAGE)
+                print(f"Cleaner: {cleaner_id}")
+                time.sleep(random.uniform(1, 3))  # Simulate cleaning
+                print(STOPPING_CLEANING_MESSAGE)
+                light_lock.release()
+                
+                with clean_count.get_lock():
+                    clean_count.value += 1
+        
+        time.sleep(random.uniform(2, 5))  # Simulate cleaning staff waiting
 
-def guest():
+def guest(start_time, guest_id, guest_count, parties_count, light_lock, room_lock):
     """
     do the following for TIME seconds
         guest will wait to try to get access to the room (guest_waiting())
@@ -57,16 +69,61 @@ def guest():
         Take some time partying (call guest_partying())
         display message STOPPING_PARTY_MESSAGE if the guest is the last one leaving in the room
     """
-    pass
+    while start_time + TIME > time.time():
+        with room_lock:
+            if guest_count.value == 0:
+                light_lock.acquire()  # First guest turns on the light
+                print(STARTING_PARTY_MESSAGE)
+                with parties_count.get_lock():
+                    parties_count.value += 1
+            
+            with guest_count.get_lock():
+                guest_count.value += 1
+                guest_number = guest_count.value
+        guest_partying(guest_id,guest_number)
+        
+        with room_lock:
+            with guest_count.get_lock():
+                guest_count.value -= 1
+                if guest_count.value == 0:
+                    print(STOPPING_PARTY_MESSAGE)
+                    light_lock.release()  # Last guest turns off the light
+        
+        guest_waiting(guest_id)
 
 def main():
     # Start time of the running of the program. 
     start_time = time.time()
 
     # TODO - add any variables, data structures, processes you need
+    room_lock = mp.Lock()  # Controls room access for guests and cleaners
+    light_lock = mp.Lock()  # Controls light status
+
+    # TODO - add any variables, data structures, processes you need
+    guest_count = mp.Value('i', 0)  # Number of guests in the room
+    clean_count = mp.Value('i', 0)  # Number of times cleaned
+    parties_count = mp.Value('i', 0)  # Number of parties
+
+
     # TODO - add any arguments to cleaner() and guest() that you need
+    processes = []
+    for i in range(1, HOTEL_GUESTS + 1):
+        p = mp.Process(target=guest, args=(start_time, i, guest_count, parties_count, light_lock, room_lock))
+        processes.append(p)
+        p.start()
+    
+    for i in range(1, CLEANING_STAFF + 1):
+        p = mp.Process(target=cleaner, args=(start_time, i, guest_count, clean_count, light_lock, room_lock))
+        processes.append(p)
+        p.start()
+    
+    # Wait for all processes to finish
+    for p in processes:
+        p.join()
 
     # Results
+    cleaned_count = clean_count.value
+    party_count = parties_count.value
     print(f'Room was cleaned {cleaned_count} times, there were {party_count} parties')
 
 
