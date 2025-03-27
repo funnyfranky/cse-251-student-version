@@ -47,18 +47,18 @@ def cleaner(start_time, cleaner_id, guest_count, clean_count, light_lock, room_l
         display message STOPPING_CLEANING_MESSAGE
     """
     while start_time + TIME > time.time():
-        with room_lock:  # Only one cleaner can enter, and must wait for an empty room
+        with room_lock:
             if guest_count.value == 0 and light_lock.acquire(block=False):
                 print(STARTING_CLEANING_MESSAGE)
                 print(f"Cleaner: {cleaner_id}")
-                time.sleep(random.uniform(1, 3))  # Simulate cleaning
+                cleaner_cleaning(cleaner_id)
                 print(STOPPING_CLEANING_MESSAGE)
                 light_lock.release()
                 
                 with clean_count.get_lock():
                     clean_count.value += 1
         
-        time.sleep(random.uniform(2, 5))  # Simulate cleaning staff waiting
+        cleaner_waiting(cleaner_id)
 
 def guest(start_time, guest_id, guest_count, parties_count, light_lock, room_lock):
     """
@@ -72,7 +72,7 @@ def guest(start_time, guest_id, guest_count, parties_count, light_lock, room_loc
     while start_time + TIME > time.time():
         with room_lock:
             if guest_count.value == 0:
-                light_lock.acquire()  # First guest turns on the light
+                light_lock.acquire()  # Turns on light
                 print(STARTING_PARTY_MESSAGE)
                 with parties_count.get_lock():
                     parties_count.value += 1
@@ -87,7 +87,7 @@ def guest(start_time, guest_id, guest_count, parties_count, light_lock, room_loc
                 guest_count.value -= 1
                 if guest_count.value == 0:
                     print(STOPPING_PARTY_MESSAGE)
-                    light_lock.release()  # Last guest turns off the light
+                    light_lock.release()  # Turns off light
         
         guest_waiting(guest_id)
 
@@ -96,13 +96,13 @@ def main():
     start_time = time.time()
 
     # TODO - add any variables, data structures, processes you need
-    room_lock = mp.Lock()  # Controls room access for guests and cleaners
-    light_lock = mp.Lock()  # Controls light status
+    room_lock = mp.Lock()
+    light_lock = mp.Lock()
 
     # TODO - add any variables, data structures, processes you need
-    guest_count = mp.Value('i', 0)  # Number of guests in the room
-    clean_count = mp.Value('i', 0)  # Number of times cleaned
-    parties_count = mp.Value('i', 0)  # Number of parties
+    guest_count = mp.Value('i', 0)
+    clean_count = mp.Value('i', 0)
+    parties_count = mp.Value('i', 0)
 
 
     # TODO - add any arguments to cleaner() and guest() that you need
