@@ -99,7 +99,6 @@ def main():
     room_lock = mp.Lock()
     light_lock = mp.Lock()
 
-    # TODO - add any variables, data structures, processes you need
     guest_count = mp.Value('i', 0)
     clean_count = mp.Value('i', 0)
     parties_count = mp.Value('i', 0)
@@ -107,12 +106,12 @@ def main():
 
     # TODO - add any arguments to cleaner() and guest() that you need
     processes = []
-    for i in range(1, HOTEL_GUESTS + 1):
+    for i in range(HOTEL_GUESTS):
         p = mp.Process(target=guest, args=(start_time, i, guest_count, parties_count, light_lock, room_lock))
         processes.append(p)
         p.start()
     
-    for i in range(1, CLEANING_STAFF + 1):
+    for i in range(CLEANING_STAFF):
         p = mp.Process(target=cleaner, args=(start_time, i, guest_count, clean_count, light_lock, room_lock))
         processes.append(p)
         p.start()
