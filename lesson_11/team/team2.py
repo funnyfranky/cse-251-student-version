@@ -35,7 +35,7 @@ Steps:
 3) Implement Stack_t and test it 
 4) Implement Stack_p and test it 
 
-Note: Testing means having lots of concurrency/parallelism happening.  Also
+Note: Testing means having lots of concurrency/parallelism happening. Also
 some methods for lists are thread safe - some are not.
 """
 
@@ -44,8 +44,17 @@ import threading
 import multiprocessing as mp
 
 # -------------------------------------------------------------------
-class Queue_t:
-    pass
+class Queue_t(threading.Thread):
+    def __init__(self):
+        super().__init__()
+        self.values = list[]
+
+    def size(self):
+        return self.values.count
+    def get(self,i):
+        return self.values.pop()
+    def put(self, data):
+        self.values.append(data)
 
 
 # -------------------------------------------------------------------

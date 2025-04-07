@@ -58,20 +58,6 @@ def solve(maze, path, x, y):
             maze.restore(x, y)
             x, y = path.pop()
 
-    # if maze.at_end(x,y):
-    #     path.append((x,y))
-    #     print(f'returning path {path}')
-    #     return path
-    # moves = maze.get_possible_moves(x,y)
-    # if len(moves) == 0:
-    #     a = path.pop()
-    #     maze.restore(x,y)
-    #     return solve(maze,path,*a)
-    # else:
-    #     path.append((x,y))
-    #     maze.move(*moves[0], COLOR)
-    #     return solve(maze,path,*moves[0])
-
 
 def get_path(log, filename):
     """ Do not change this function """
